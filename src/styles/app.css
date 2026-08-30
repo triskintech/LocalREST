@@ -1,0 +1,1242 @@
+/* Layout for LocalREST. Modernist supplies every colour, type and spacing
+   token used here; this file only arranges them. The prototype expressed all
+   of this as inline styles — pulling it into classes keeps the components
+   readable and the CSS in one auditable place. */
+
+.mono {
+  font-family: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* An extension tab, never a phone: no mobile breakpoints, just a floor below
+   which the three panes stop making sense. */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 900px;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.app-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* — top bar — */
+
+.nav {
+  flex-shrink: 0;
+}
+
+.nav-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+/* — theme —
+   A set-once preference sharing a bar with the things you touch all day, so it
+   is sized down to the bar's smallest type. It reads as a setting you can see
+   rather than an action competing for the click. */
+.seg-compact .seg-opt {
+  padding: 4px 9px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+/* — a label above a control, used for the environment selector — */
+.env-select {
+  width: auto;
+  min-width: 150px;
+  max-width: 220px;
+}
+
+/* — menus — */
+
+.menu-anchor {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 40;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-md);
+}
+
+.menu-item {
+  justify-content: flex-start;
+  width: 100%;
+  font-size: 13px;
+  padding: var(--space-2) var(--space-3);
+}
+
+.menu-item:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+.menu-item-danger {
+  color: var(--color-accent-700);
+}
+
+.menu-sep {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--color-divider);
+}
+
+/* Room for an arbitrary control (e.g. the theme switch) rather than a single
+   clickable label. */
+.menu-custom {
+  padding: var(--space-2) var(--space-3);
+}
+
+.menu-sep:last-child {
+  display: none;
+}
+
+/* — settings panel —
+
+   Not a list of actions, so it drops the menu's inner padding and becomes a
+   stack of full-bleed bands: the same device the sidebar tabs and the
+   response legend use to divide the main UI, at popover scale. That is what
+   makes it read as part of the instrument rather than as dropdown chrome. */
+
+.menu-settings {
+  min-width: 288px;
+  padding: 0;
+}
+
+.menu-settings .menu-custom {
+  padding: 0;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+/* On the following sibling, not the preceding one: a section is free to
+   render nothing (Site access does, outside the extension) and a rule owned
+   by the section above it would then be a line under thin air. */
+.settings-section + .settings-section {
+  border-top: 1px solid var(--color-divider);
+}
+
+/* The app's own section device, shared with .sidebar-tab and
+   .response-legend. */
+.settings-legend {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* One line under a control, saying what the current state means. Never a
+   second label — the legend already names the section. */
+.settings-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+/* Full width, so the control divides the panel rather than floating short of
+   its edge as an inline widget. */
+.seg-fill {
+  display: flex;
+  width: 100%;
+}
+
+.seg-fill .seg-opt {
+  flex: 1;
+  justify-content: center;
+}
+
+/* The height is pinned rather than left to the content: the Support row
+   carries a tag and the Site access row does not, and without this the two
+   full-width buttons in the same panel came out 3px apart. */
+/* Mid-grant the choice is not settled yet, so the control neither invites a
+   second click nor pretends the new option has taken. */
+.seg-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.settings-row {
+  width: 100%;
+  min-height: 36px;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: var(--space-2) var(--space-3);
+}
+
+/* The tag's own line box is what pushed the row 1px past the pinned height; at
+   this size the glyphs need no leading of their own. */
+.settings-row .tag {
+  line-height: 1;
+}
+
+/* Trailing glyph on a settings row. Accent, because it is the only thing in
+   this panel asking for anything, and line-height 1 for the same reason the
+   tag has it. */
+.settings-row-glyph {
+  line-height: 1;
+  font-size: 14px;
+  color: var(--color-accent-700);
+}
+
+/* Four short claims, wrapped as a row rather than stacked: a bulleted column
+   would read as a feature list, which is the one thing this is not. */
+.settings-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* Trailing the item, not leading the next one: as a ::before on the following
+   item the separator becomes the first thing on a wrapped line, which reads
+   as a bullet for the wrong entry. */
+.settings-facts li:not(:last-child)::after {
+  content: '·';
+  margin-left: var(--space-2);
+  color: color-mix(in srgb, var(--color-text) 35%, transparent);
+}
+
+.settings-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: 11px;
+  line-height: 1.45;
+  cursor: pointer;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+.settings-check .check {
+  flex: none;
+  margin-top: 1px;
+}
+
+.settings-identity {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* The wordmark stands in for the app name here, at the size the row already
+   used. It holds: the slashes are 65% ink, which is 4.96:1 on bone and 6.71:1
+   on ink, so nothing in the lockup depends on being large. */
+.settings-identity .lockup {
+  font-size: 14px;
+}
+
+.settings-version {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* — sidebar — */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 280px;
+  overflow: hidden;
+  border-right: 2px solid var(--color-divider);
+}
+
+.sidebar-tabs {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.sidebar-tab {
+  flex: 1;
+  justify-content: flex-start;
+  padding: 10px 14px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.sidebar-tab + .sidebar-tab {
+  border-left: 2px solid var(--color-divider);
+}
+
+.sidebar-tab[aria-selected='true'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+/* — collection tree — */
+
+.tree-group {
+  margin-bottom: var(--space-1);
+}
+
+.tree-collection {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: 8px 6px;
+}
+
+.tree-collection:hover {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.tree-caret {
+  flex-shrink: 0;
+  width: 10px;
+  font-size: 10px;
+  color: var(--color-accent-700);
+}
+
+.tree-label {
+  flex: 1;
+  /* A flex item's default min-width is its content size, not 0 — without
+     this, a long name grows the row instead of eliding, pushing the ⋯
+     menu out past the sidebar's edge where hover can never reach it. */
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-request {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: 7px 6px 7px 18px;
+  border-left: 3px solid transparent;
+}
+
+.tree-request:hover {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+/* The selected row was a pale accent tint that all but vanished against the
+   bone background. Solid ink with a bone label reads instantly and leaves the
+   accent free to mean "action" everywhere else. */
+.tree-request[aria-current='true'] {
+  background: var(--color-neutral-900);
+  border-left-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.tree-request[aria-current='true']:hover {
+  background: var(--color-neutral-800);
+}
+
+/* Inverted the same way on ink, but one step short of the ramp's end: a plane
+   at full bone glares against a dark app in a way solid ink never does against
+   a light one, and it was pulling the eye harder than the request it marks.
+   Still an inverted plane, so every chip rule below keeps working. */
+:root[data-theme='dark'] .tree-request[aria-current='true'] {
+  background: var(--color-neutral-800);
+}
+
+:root[data-theme='dark'] .tree-request[aria-current='true']:hover {
+  background: var(--color-neutral-900);
+}
+
+/* The method chip has to survive the inversion. */
+.tree-request[aria-current='true'] .method-read {
+  color: var(--color-neutral-300);
+  border-color: color-mix(in srgb, var(--color-bg) 45%, transparent);
+}
+
+.tree-request[aria-current='true'] .method-write {
+  background: var(--color-accent-500);
+  color: var(--color-neutral-900);
+}
+
+/* The chip's text is picked to contrast with the CHIP, not with the page, so
+   it is the one thing here that must not follow the ramp: inverted, the row is
+   a light plane in either theme and this stays dark type on vermilion. */
+:root[data-theme='dark'] .tree-request[aria-current='true'] .method-write {
+  color: var(--color-bg);
+}
+
+.tree-request[aria-current='true'] .method-destroy {
+  background: var(--color-accent-600);
+  color: var(--color-bg);
+}
+
+/* Open in another tab: marked, but not competing with the active row. */
+.tree-request-open {
+  border-left-color: var(--color-neutral-400);
+}
+
+/* .btn imposes the 800-weight heading face; request names are body text and
+   sit inside a button only because the whole row is clickable. */
+.tree-request-name {
+  flex: 1;
+  /* Same reason as .tree-label: without this, a long URL grows the row
+     instead of eliding, and the ⋯ menu is pushed out of hover's reach. */
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+}
+
+/* Row actions stay hidden until the row is hovered or focused, so a long
+   collection reads as a list of requests rather than a wall of controls. */
+.row-actions {
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+/* Three dots wide, not a 36px square. .btn-icon is sized for a toolbar button
+   standing on its own; here every pixel of it comes straight out of the
+   request label beside it. The height is left alone so the target still spans
+   the row and stays comfortable to hit. */
+.row-actions .btn-icon {
+  width: 22px;
+}
+
+/* Keyed off the ROW, not the button. .row-actions is the button's sibling, so
+   `.tree-request:hover + .row-actions` un-hovers the moment the pointer leaves
+   the button — which is exactly what moving onto the ⋯ does. The menu went
+   transparent under the cursor on its way to being clicked. */
+.tree-row:hover .row-actions,
+.row-actions:focus-within {
+  opacity: 1;
+}
+
+/* — history — */
+
+.history-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--color-divider);
+  text-align: left;
+}
+
+.history-row:hover {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.history-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-url {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* — request tabs — */
+
+.tabbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: stretch;
+  background: var(--color-surface);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.tabbar-scroll {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  max-width: 240px;
+  background: transparent;
+  border-right: 1px solid var(--color-divider);
+  /* Dragging a tab must not start a text selection across the strip. */
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* The active tab reads as continuous with the request pane below it. */
+.tab-active {
+  background: var(--color-bg);
+  box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+
+.tab:not(.tab-active):hover {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.tab-label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  padding: 9px 4px 9px 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-unsaved {
+  flex: none;
+  font-size: 16px;
+  line-height: 0;
+  color: var(--color-accent-700);
+}
+
+.tab-close {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin-right: 6px;
+  font-size: 14px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.tab-close:hover {
+  color: var(--color-accent-700);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.tab-new {
+  flex: none;
+  width: 34px;
+  padding: 0;
+  font-size: 16px;
+  border-left: 1px solid var(--color-divider);
+}
+
+.tab-new:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+/* — builder — */
+
+.builder {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* — request name —
+   A title, not a form field: the request is a document and this is what it is
+   called. It carries no border at rest so the bar stays as quiet as it was
+   before the name existed, and grows one on hover and focus so it is still
+   discoverably editable. */
+.name-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: var(--space-3) var(--space-4) 0;
+}
+
+.request-name {
+  width: 100%;
+  min-height: 0;
+  padding: 2px 6px;
+  /* Pulled back by its own padding so the text sits on the same left edge as
+     the method chip below it. */
+  margin-left: -6px;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  line-height: 1.3;
+  background: transparent;
+  border-color: transparent;
+}
+
+.request-name:hover {
+  border-color: var(--color-divider);
+}
+
+.request-name:focus-visible {
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+}
+
+/* The stand-in URL is deliberately not dressed as a name: body face, lighter,
+   so you can tell at a glance whether a request has been named or is simply
+   showing where it points. */
+.request-name::placeholder {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  color: color-mix(in srgb, var(--color-text) 45%, transparent);
+  opacity: 1;
+}
+
+.url-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.method-select {
+  flex-shrink: 0;
+  width: auto;
+  font-weight: 800;
+}
+
+.tabstrip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0 var(--space-4);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.tabstrip-tab {
+  padding: 7px 2px;
+  margin-bottom: -2px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  border-bottom: 2px solid transparent;
+}
+
+.tabstrip-tab[aria-selected='true'] {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.builder-panes {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The Body JSON/Text textarea fills this box exactly (see .body-textarea)
+   rather than scrolling inside it, so overflow here is a safety net for the
+   other tabs (Params/Headers/Auth), not the normal case. */
+.builder-editor {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  max-height: 44%;
+  padding: var(--space-3);
+  overflow-y: auto;
+}
+
+/* The Body editor's JSON/Text textarea fills whatever height .builder-editor
+   currently has (driven only by the pane splitter below) instead of carrying
+   its own native resize handle — two independent ways to change its size
+   left a gap between it and the response pane. This class is also used on
+   the JSON mode's CodeMirror host <div>, where these rules already win
+   against .input on source order (equal, class-only specificity) — this
+   plain form has to stay for that element. */
+.body-textarea {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+}
+
+/* For the Text-mode <textarea> specifically: textarea.input's own
+   min-height/resize rules match an element-plus-class selector, which beats
+   the class-only rule above regardless of source order — same issue as
+   textarea.curl-snippet below, missed here the first time. A <div> host
+   never matches this selector, so the rule above still governs it alone. */
+textarea.body-textarea {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+}
+
+/* — pane splitter —
+   The 2px rule that separated the panes is now the drag handle. Its hit area
+   is larger than the rule so it can actually be grabbed. */
+.splitter {
+  position: relative;
+  flex: none;
+  height: 2px;
+  background: var(--color-divider);
+  cursor: row-resize;
+}
+
+.splitter::before {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+.splitter:hover,
+.splitter:focus-visible {
+  background: var(--color-accent);
+  outline: none;
+}
+
+/* A short centred grip, so the divider reads as draggable at rest. */
+.splitter-grip {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 44px;
+  height: 4px;
+  transform: translateX(-50%);
+  background: var(--color-neutral-400);
+}
+
+.splitter:hover .splitter-grip,
+.splitter:focus-visible .splitter-grip {
+  background: var(--color-accent);
+}
+
+/* While dragging, the cursor must not flicker over child elements and text
+   must not select as the pointer sweeps the panes. */
+body.is-resizing {
+  cursor: row-resize;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Vertical variant of the splitter above, for the sidebar/builder boundary —
+   same hit-area trick, rotated. */
+.splitter-vertical {
+  width: 2px;
+  height: auto;
+  cursor: col-resize;
+}
+
+.splitter-vertical::before {
+  inset: 0 -4px;
+}
+
+.splitter-grip-vertical {
+  top: 50%;
+  left: -1px;
+  width: 4px;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+body.is-resizing-col {
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* — key/value rows — */
+
+.kv-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.kv-row .input {
+  flex: 1;
+  min-width: 0;
+  min-height: 30px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.kv-row .btn-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.kv-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px 0 var(--space-2) 26px;
+  font-size: 11px;
+  color: var(--color-accent-700);
+}
+
+/* — response — */
+
+.response {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.response-strip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+/* Every child sits on one 20px line so the legend, status, tabs and meta all
+   share a baseline instead of each finding its own. */
+.response-strip > * {
+  line-height: 20px;
+}
+
+.response-legend {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Status reads as a filled pill: green for 2xx, red for 4xx and 5xx, the
+   convention every API tool already uses. The code and reason phrase sit
+   inside it, so the colour is reinforcement rather than the only signal. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+
+.status-ok {
+  background: var(--color-success);
+}
+
+/* A redirect is neither success nor failure; ink keeps it out of the argument. */
+.status-redirect,
+.status-unknown {
+  background: var(--color-neutral-700);
+}
+
+.status-client-error,
+.status-server-error {
+  background: var(--color-accent);
+}
+
+.response-tabs {
+  display: flex;
+  gap: var(--space-4);
+}
+
+/* Timing and size are the least-read values on the strip, so they are pushed
+   to the far edge and the status sits beside its own Body/Headers tabs. */
+.response-meta {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.response-save {
+  padding: 3px 10px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+/* The tabs used to hang off the right edge with a negative margin that pulled
+   them out of line with the status beside them. They now share the strip's
+   baseline and the underline sits on the strip's own bottom rule. */
+.response-tab {
+  padding: 0 2px;
+  font-size: 11px;
+  line-height: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  border-bottom: 2px solid transparent;
+}
+
+.response-tab[aria-selected='true'] {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.response-body {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+/* — code view —
+   One row per line rather than a single <pre>, so the number gutter stays
+   aligned with its line even when the line wraps. */
+
+.code {
+  padding: 10px 0;
+  background: var(--color-surface);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.code-row {
+  display: flex;
+  gap: 14px;
+  padding: 0 14px;
+}
+
+.code-row:hover {
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+}
+
+/* Not selectable, so copying the body does not drag the numbers along. */
+.code-gutter {
+  flex: none;
+  text-align: right;
+  color: color-mix(in srgb, var(--color-text) 40%, transparent);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.code-line {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* — find in response —
+   Sticky rather than fixed so it rides the response pane while it scrolls,
+   and right-aligned so it never covers the start of a line. */
+.find {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-bottom: var(--space-2);
+  padding: var(--space-1);
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-md);
+}
+
+.find-input {
+  width: 220px;
+  min-height: 28px;
+  font-size: 12px;
+}
+
+.find-toggle {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 12px;
+  border-color: var(--color-divider);
+}
+
+.find-toggle.is-on {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.find-count {
+  min-width: 74px;
+  padding: 0 var(--space-1);
+  font-size: 11px;
+  text-align: right;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+.find-step {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+}
+
+/* Every hit is tinted; the one you are on takes the accent so stepping
+   through them is visible without hunting. */
+.find-hit {
+  padding: 0;
+  color: inherit;
+  background: var(--color-accent-200);
+}
+
+.find-hit-active {
+  color: var(--color-bg);
+  background: var(--color-accent);
+}
+
+/* — folding — */
+
+.code-fold {
+  flex: none;
+  width: 14px;
+  padding: 0;
+  font-size: 9px;
+  line-height: inherit;
+  text-align: center;
+  color: color-mix(in srgb, var(--color-text) 45%, transparent);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+button.code-fold:hover {
+  color: var(--color-accent-700);
+}
+
+.code-key {
+  font-weight: 600;
+}
+
+/* Same mapping as the request Body editor's JSON highlighting
+   (JsonBodyEditor.tsx's jsonHighlight), so a value reads the same color in
+   both panes. */
+.code-string {
+  color: var(--color-accent-600);
+}
+
+.code-number {
+  color: var(--color-accent-2-600);
+}
+
+.code-bool-null {
+  color: var(--color-neutral-700);
+}
+
+.code-punct {
+  color: var(--color-neutral-500);
+}
+
+/* The folded summary is a control, so it reads as one without shouting. */
+.code-summary {
+  margin: 0 6px;
+  padding: 0 6px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--color-accent-800);
+  background: var(--color-accent-100);
+  border: 0;
+  cursor: pointer;
+}
+
+.code-summary:hover {
+  background: var(--color-accent-200);
+}
+
+/* — states —
+   An empty screen is an invitation to act, so the centred states carry the
+   action that fills them rather than only a sentence. */
+
+.state-center {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.state-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.state-detail {
+  max-width: 46ch;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.state-error .state-title {
+  color: var(--color-accent-700);
+}
+
+/* — dialogs — */
+
+.dialog-wide {
+  width: min(560px, 100%);
+}
+
+.dialog-scroll {
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+/* Tall enough to read a real command without the dialog itself growing past
+   the viewport — a plain textarea already scrolls its own overflow and lets
+   the resize handle go further, capped so it can't push the dialog off
+   screen either way. */
+/* textarea.curl-snippet, not .curl-snippet: textarea.input's own min-height
+   rule matches an element-plus-class selector, which beats a class-only one
+   regardless of source order — this has to meet or beat that specificity. */
+textarea.curl-snippet {
+  min-height: 220px;
+  max-height: 60vh;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* — toast — */
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-bg);
+  background: var(--color-neutral-900);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast {
+    animation: toast-in 140ms ease-out;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── brand lockup ─────────────────────────────────────────────────────────
+   The outlined mark plus the wordmark, as in brand/lockup-light.png. The mark
+   is drawn rather than loaded: two rules in a bordered box is less markup than
+   an <img>, it takes the theme with it, and it cannot arrive a frame late.
+   ────────────────────────────────────────────────────────────────────────── */
+.lockup {
+  --mark-size: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+}
+
+/* Fractions of --mark-size, matching markOutline() in scripts/make-brand.mjs:
+   2/28 = 1/14 for the border, 4/28 = 1/7 for the padding, rule and gap. Written
+   as exact ratios rather than decimals because 0.0714 * 28 is 1.9992, and Chrome
+   floors a border to the device pixel below — giving 1.5px instead of 2. */
+.lockup-mark {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  border: calc(var(--mark-size) / 14) solid var(--color-text);
+  padding: 0 calc(var(--mark-size) / 7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--mark-size) / 7);
+}
+
+.lockup-mark i {
+  display: block;
+  height: calc(var(--mark-size) / 7);
+}
+
+/* Request over response — the long rule in accent, the short one in ink. */
+.lockup-mark i:first-child {
+  width: 100%;
+  background: var(--color-accent);
+}
+
+.lockup-mark i:last-child {
+  width: 56%;
+  background: var(--color-text);
+}
+
+.wordmark {
+  font-family: var(--font-heading);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wordmark-name {
+  font-style: italic;
+  font-weight: 800;
+}
+
+/* 65% rather than the 55% the first sketch used: 4.96:1 on bone and 6.71:1 on
+   ink, so the slashes hold at 16px as well as at 160px. */
+.wordmark-sep {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-text) 65%, transparent);
+}
+
+/* accent-700, not accent: at 18px this is below the 18.66px large-text line, so
+   it needs 4.5:1 like body copy. Full accent gives 3.76:1 on bone. */
+.wordmark-rest {
+  font-weight: 800;
+  color: var(--color-accent-700);
+}

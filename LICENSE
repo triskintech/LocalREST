@@ -1,0 +1,27 @@
+Copyright (c) 2026 Triskin Tech. All rights reserved.
+
+The source code in this repository is published for reference: so that anyone
+who installs LocalREST can read exactly what it does with their data, and
+satisfy themselves that the claims made in README.md and PRIVACY.md are true.
+
+You may read this repository and its history, in full, for any purpose.
+
+You may not copy, modify, adapt, translate, merge, publish, distribute,
+sublicense, sell, or create derivative works from this software, in whole or
+in part, nor build or distribute your own version of it, without prior written
+permission from the copyright holder.
+
+LocalREST is distributed through the Chrome Web Store. Installing and using it
+from there is permitted and encouraged; redistributing it is not.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+This software bundles third-party components distributed under their own
+permissive licences, which are unaffected by the terms above and remain the
+property of their respective authors.

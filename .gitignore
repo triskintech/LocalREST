@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.claude/
+extension-key.pem
+.idea/
+brand/*.svg
+!brand/mark.svg
+!brand/mark-outline.svg

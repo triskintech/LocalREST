@@ -1,0 +1,46 @@
+{
+  "name": "localrest",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Build, send and organise HTTP requests entirely in your browser. No account, no cloud sync, no 200MB desktop app.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/triskintech/LocalREST.git"
+  },
+  "homepage": "https://github.com/triskintech/LocalREST#readme",
+  "bugs": {
+    "url": "https://github.com/triskintech/LocalREST/issues"
+  },
+  "scripts": {
+    "dev": "vite",
+    "watch": "vite build --watch",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.11.0",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.9",
+    "@fontsource/archivo": "^5.1.0",
+    "@lezer/highlight": "^1.2.3",
+    "@replit/codemirror-indentation-markers": "^6.5.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10"
+  }
+}
