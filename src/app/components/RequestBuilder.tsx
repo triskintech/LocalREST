@@ -126,9 +126,13 @@ export function RequestBuilder({
     edit({ url: applyParamsToUrl(request.url, merged), params: merged });
   };
 
-  /** Edits in the Params table write straight back into the URL bar. */
+  /**
+   * Edits in the Params table write straight back into the URL bar. The
+   * current rows are passed as the previous set so a renamed or deleted key
+   * leaves the URL with them — see applyParamsToUrl.
+   */
   const setParams = (params: typeof request.params) =>
-    edit({ params, url: applyParamsToUrl(request.url, params) });
+    edit({ params, url: applyParamsToUrl(request.url, params, request.params) });
 
   /**
    * A curl command pasted into the URL bar replaces the whole request rather

@@ -78,13 +78,35 @@ function splitFragment(url: string): { head: string; fragment: string } {
  * URL already carried is left alone. That is what lets the query live in the
  * URL bar *and* the Params table without the two fighting or doubling up —
  * buildRequest applies this same function, so what you see is what is sent.
+ *
+ * `previous` is the row set the URL was last built from, and it is what makes
+ * an edit in the table distinguishable from a key typed into the URL bar. A
+ * key `previous` owned and `params` no longer does was renamed or deleted, so
+ * the URL must lose it. Callers that are simply rendering a URL from rows —
+ * buildRequest, toCurl — have no such history and correctly omit it.
  */
-export function applyParamsToUrl(rawUrl: string, params: readonly KeyValue[]): string {
+export function applyParamsToUrl(
+  rawUrl: string,
+  params: readonly KeyValue[],
+  previous: readonly KeyValue[] = params,
+): string {
   const { head: url, fragment } = splitFragment(rawUrl.trim());
   const named = params.filter((param) => param.key.trim() !== '');
   const questionMark = url.indexOf('?');
   const base = questionMark === -1 ? url : url.slice(0, questionMark);
-  const existing = questionMark === -1 ? [] : splitPairs(url.slice(questionMark + 1));
+  const carried = questionMark === -1 ? [] : splitPairs(url.slice(questionMark + 1));
+
+  const owned = new Set(named.map((param) => param.key));
+
+  // Without this, the old spelling of a renamed row looks exactly like a key
+  // the user typed into the URL bar, and is preserved on that basis: typing
+  // `example_key` left `e`, `ex`, `exa`… behind, one orphan per keystroke.
+  // Deleting a row was the same fault with a worse ending — the key stayed in
+  // the query and the param went out on the wire.
+  const surrendered = new Set(
+    previous.map((param) => param.key).filter((key) => key.trim() !== '' && !owned.has(key)),
+  );
+  const existing = carried.filter((pair) => !surrendered.has(pair.key));
 
   // Anything the params do not own is copied over character for character
   // rather than decoded and re-encoded. See QueryPair: re-encoding is not an
@@ -105,7 +127,6 @@ export function applyParamsToUrl(rawUrl: string, params: readonly KeyValue[]): s
       : `${encodeURIComponent(row.key)}=${encodeURIComponent(row.value)}`;
   };
 
-  const owned = new Set(named.map((param) => param.key));
   const pieces: string[] = [];
   const emitted = new Set<string>();
 

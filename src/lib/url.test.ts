@@ -321,3 +321,71 @@ describe('applyParamsToUrl — ordering of repeated keys', () => {
     }
   });
 });
+
+/**
+ * The params table owns a row's *identity*, not its spelling. Renaming a key
+ * — which is what typing one into an empty row is, one character at a time —
+ * used to leave every previous spelling behind in the URL as an orphan param,
+ * because a renamed key is unowned and unowned keys are preserved on purpose.
+ * Deleting a row had the same fault, and that one shipped a wrong request:
+ * the param stayed in the URL and went out on the wire.
+ */
+describe('applyParamsToUrl — rows that were renamed or removed', () => {
+  const row = (key: string, value: string, enabled = true) => ({
+    id: `id:${key}`,
+    key,
+    value,
+    enabled,
+  });
+  const stable = (key: string, value: string) => ({ id: 'row-1', key, value, enabled: true });
+
+  it('leaves nothing behind while a key is typed one character at a time', () => {
+    let url = 'https://api.test/x';
+    let previous = [stable('', '')];
+    for (const key of ['e', 'ex', 'exa', 'exam', 'example']) {
+      const next = [stable(key, '')];
+      url = applyParamsToUrl(url, next, previous);
+      previous = next;
+    }
+    expect(url).toBe('https://api.test/x?example=');
+  });
+
+  it('drops a key the params no longer carry, so a deleted row is not sent', () => {
+    const previous = [row('a', '1'), row('b', '2')];
+    expect(applyParamsToUrl('https://api.test/x?a=1&b=2', [row('b', '2')], previous)).toBe(
+      'https://api.test/x?b=2',
+    );
+  });
+
+  it('still preserves a key only the url bar ever had', () => {
+    const previous = [row('a', '1')];
+    expect(applyParamsToUrl('https://api.test/x?keep=1&a=1', [row('a', '2')], previous)).toBe(
+      'https://api.test/x?keep=1&a=2',
+    );
+  });
+
+  it('preserves a url-only key across a rename of a different row', () => {
+    const previous = [row('a', '1')];
+    expect(applyParamsToUrl('https://api.test/x?keep=1&a=1', [row('z', '1')], previous)).toBe(
+      'https://api.test/x?keep=1&z=1',
+    );
+  });
+
+  it('keeps the surviving row when one of two rows sharing a key is deleted', () => {
+    const previous = [
+      { id: 'r1', key: 'tag', value: 'a', enabled: true },
+      { id: 'r2', key: 'tag', value: 'b', enabled: true },
+    ];
+    expect(applyParamsToUrl('https://api.test/x?tag=a&tag=b', [previous[1]!], previous)).toBe(
+      'https://api.test/x?tag=b',
+    );
+  });
+
+  // Callers that legitimately have no previous set — buildRequest and toCurl
+  // build a url from whatever they are handed — must keep the old behaviour.
+  it('preserves unowned keys when no previous params are given', () => {
+    expect(applyParamsToUrl('https://api.test/x?keep=1', [row('a', '2')])).toBe(
+      'https://api.test/x?keep=1&a=2',
+    );
+  });
+});
