@@ -135,6 +135,13 @@ export type AppData = {
    * Only has any effect once FEEDBACK_BASE_URL is filled in.
    */
   uninstallFeedback: boolean;
+  /**
+   * Whether a copied curl command carries resolved values or the
+   * `{{template}}` it was written as. Persisted rather than living in the
+   * dialog, because the sidebar's own "Copy as curl" writes straight to the
+   * clipboard with no dialog to ask in, and the two must not disagree.
+   */
+  resolveCurlVariables: boolean;
 };
 
 /** Bounds for the request/response split, in pixels. */

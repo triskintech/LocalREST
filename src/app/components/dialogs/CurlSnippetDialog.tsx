@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toCurl } from '../../../lib/curl/toCurl';
+import { environmentVars } from '../../../lib/variables/resolve';
 import { copyText } from '../../net/download';
 import { useActiveRequest, useStore } from '../../state/store';
 import { Dialog } from '../Dialog';
@@ -12,10 +13,27 @@ import { Dialog } from '../Dialog';
  * tweaked right before it's used.
  */
 export function CurlSnippetDialog() {
-  const { dispatch } = useStore();
+  const { state, dispatch } = useStore();
   const request = useActiveRequest();
-  const [command, setCommand] = useState(() => toCurl(request));
   const close = () => dispatch({ type: 'closeDialog' });
+
+  const resolveVariables = state.data.resolveCurlVariables;
+  const environment = state.data.environments.find(
+    (each) => each.id === state.data.activeEnvironmentId,
+  );
+  const vars = useMemo(
+    () => (resolveVariables ? environmentVars(environment) : {}),
+    [resolveVariables, environment],
+  );
+
+  const [command, setCommand] = useState(() => toCurl(request, vars));
+
+  // Flipping the toggle changes what the command is made of, so it is rebuilt
+  // rather than patched — and any hand edit in the box goes with it. A command
+  // half in one form and half in the other would be worse than either.
+  useEffect(() => {
+    setCommand(toCurl(request, vars));
+  }, [request, vars]);
 
   const copy = async () => {
     const ok = await copyText(command);
@@ -45,6 +63,25 @@ export function CurlSnippetDialog() {
         onChange={(e) => setCommand(e.target.value)}
         spellCheck={false}
       />
+
+      {/* Only shown when there is an environment to resolve against: a switch
+          that cannot change the command is a puzzle, not a control. */}
+      {environment && (
+        <label className="curl-snippet-option">
+          <input
+            type="checkbox"
+            className="check"
+            checked={resolveVariables}
+            onChange={(e) =>
+              dispatch({ type: 'setResolveCurlVariables', enabled: e.target.checked })
+            }
+          />
+          <span>
+            Fill in values from {environment.name}
+            {resolveVariables ? '' : ' — the command keeps its {{variables}}'}
+          </span>
+        </label>
+      )}
     </Dialog>
   );
 }

@@ -96,7 +96,17 @@ export function ResponsePane({ response }: { response: ResponseState }) {
           </div>
         )}
 
-        {success && tab === 'body' && (
+        {/* A 204, a HEAD, or any reply with nothing in it: without this the
+            pane simply goes blank and reads as a failure to render. */}
+        {success && tab === 'body' && success.bodyText === '' && (
+          <div className="state-center">
+            <p className="state-detail text-muted mono">
+              {success.status} with no body
+            </p>
+          </div>
+        )}
+
+        {success && tab === 'body' && success.bodyText !== '' && (
           <>
             <CodeBlock text={success.bodyText} />
             {/* The cap is on characters, not bytes — formatSize rendered it as

@@ -9,6 +9,7 @@ import { CurlSnippetDialog } from './components/dialogs/CurlSnippetDialog';
 import { EnvironmentsDialog } from './components/dialogs/EnvironmentsDialog';
 import { ImportCollectionDialog } from './components/dialogs/ImportCollectionDialog';
 import { ImportCurlDialog } from './components/dialogs/ImportCurlDialog';
+import { ConfirmDeleteDialog } from './components/dialogs/ConfirmDeleteDialog';
 import { RenameDialog } from './components/dialogs/RenameDialog';
 import { SaveRequestDialog } from './components/dialogs/SaveRequestDialog';
 import { useSender } from './net/useSender';
@@ -70,6 +71,8 @@ function Dialogs() {
       return <BackupDialog />;
     case 'rename':
       return <RenameDialog dialog={state.dialog} />;
+    case 'confirm-delete':
+      return <ConfirmDeleteDialog dialog={state.dialog} />;
     case 'curl-snippet':
       return <CurlSnippetDialog />;
     default:

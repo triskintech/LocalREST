@@ -44,6 +44,7 @@ export function emptyData(): AppData {
     sidebarWidth: null,
     theme: 'system',
     uninstallFeedback: true,
+    resolveCurlVariables: true,
   };
 }
 
@@ -302,5 +303,8 @@ export function migrate(stored: unknown): AppData {
     // Defaults on: only an explicit false is a decision to opt out, so a
     // store written before this existed keeps the shipped default.
     uninstallFeedback: stored['uninstallFeedback'] !== false,
+    // A command that cannot be run is not a curl command, so this defaults on
+    // for a store written before it existed.
+    resolveCurlVariables: bool(stored['resolveCurlVariables'], true),
   };
 }

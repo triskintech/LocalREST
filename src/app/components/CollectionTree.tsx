@@ -1,6 +1,7 @@
 import { toCurl } from '../../lib/curl/toCurl';
 import { exportPostman } from '../../lib/postman/exportCollection';
 import type { ApiRequest, Collection } from '../../lib/types';
+import { environmentVars } from '../../lib/variables/resolve';
 import { copyText, downloadJson } from '../net/download';
 import { useStore } from '../state/store';
 import { Menu } from './Menu';
@@ -21,8 +22,14 @@ export function CollectionTree() {
     state.data.tabs.map((t) => t.requestId).filter((id): id is string => id !== null),
   );
 
+  // Same setting the Curl snippet dialog shows, because this path has no
+  // dialog to ask in and the two answering differently would be a trap.
+  const curlVars = state.data.resolveCurlVariables
+    ? environmentVars(state.data.environments.find((e) => e.id === state.data.activeEnvironmentId))
+    : {};
+
   const copyAsCurl = async (request: ApiRequest) => {
-    const ok = await copyText(toCurl(request));
+    const ok = await copyText(toCurl(request, curlVars));
     dispatch({
       type: 'toast',
       message: ok ? 'Copied as curl.' : 'Could not reach the clipboard.',
@@ -101,7 +108,16 @@ export function CollectionTree() {
                     kind: 'item',
                     label: 'Delete collection',
                     danger: true,
-                    onSelect: () => dispatch({ type: 'deleteCollection', id: collection.id }),
+                    onSelect: () =>
+                      dispatch({
+                        type: 'openDialog',
+                        dialog: {
+                          kind: 'confirm-delete',
+                          target: 'collection',
+                          id: collection.id,
+                          name: collection.name,
+                        },
+                      }),
                   },
                 ]}
               />
@@ -158,7 +174,16 @@ export function CollectionTree() {
                           kind: 'item',
                           label: 'Delete request',
                           danger: true,
-                          onSelect: () => dispatch({ type: 'deleteRequest', id: request.id }),
+                          onSelect: () =>
+                            dispatch({
+                              type: 'openDialog',
+                              dialog: {
+                                kind: 'confirm-delete',
+                                target: 'request',
+                                id: request.id,
+                                name: requestLabel(request),
+                              },
+                            }),
                         },
                       ]}
                     />

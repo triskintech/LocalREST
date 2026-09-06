@@ -1324,3 +1324,17 @@ textarea.curl-snippet {
   color: var(--color-neutral-700);
   cursor: pointer;
 }
+
+/* The only button in the app that destroys something. It takes the accent as
+   a fill the way the primary does, so it reads as the weighty choice — but it
+   is never the focused default; see ConfirmDeleteDialog. */
+.btn-danger {
+  background: var(--color-accent-700);
+  color: var(--color-on-accent);
+  border-color: var(--color-accent-700);
+}
+.btn-danger:hover { background: var(--color-accent-800); border-color: var(--color-accent-800); }
+.btn-danger:active { background: var(--color-accent-900); border-color: var(--color-accent-900); }
+
+.confirm-text { font-size: 14px; line-height: 1.5; }
+.confirm-text + .confirm-text { margin-top: var(--space-2); }

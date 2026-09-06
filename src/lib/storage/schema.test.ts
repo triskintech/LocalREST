@@ -210,3 +210,21 @@ describe('migrate — request names', () => {
     expect(nameOf('New request handler')).toBe('New request handler');
   });
 });
+
+describe('resolveCurlVariables', () => {
+  it('defaults on for a store written before the setting existed', () => {
+    expect(migrate({ collections: [] }).resolveCurlVariables).toBe(true);
+  });
+
+  it('keeps an explicit opt-out', () => {
+    expect(migrate({ collections: [], resolveCurlVariables: false }).resolveCurlVariables).toBe(
+      false,
+    );
+  });
+
+  it('ignores a value that is not a boolean', () => {
+    expect(migrate({ collections: [], resolveCurlVariables: 'yes' }).resolveCurlVariables).toBe(
+      true,
+    );
+  });
+});

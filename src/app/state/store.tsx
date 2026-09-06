@@ -39,6 +39,7 @@ export type Dialog =
   | { kind: 'environments' }
   | { kind: 'backup' }
   | { kind: 'rename'; target: 'request' | 'collection'; id: string; name: string }
+  | { kind: 'confirm-delete'; target: 'request' | 'collection'; id: string; name: string }
   | { kind: 'curl-snippet' };
 
 export type State = {
@@ -78,6 +79,7 @@ export type Action =
   | { type: 'setSidebarWidth'; width: number | null }
   | { type: 'setTheme'; theme: Theme }
   | { type: 'setUninstallFeedback'; enabled: boolean }
+  | { type: 'setResolveCurlVariables'; enabled: boolean }
   | { type: 'setSidebarView'; view: SidebarView }
   | { type: 'setBuilderTab'; tab: BuilderTab }
   | { type: 'setResponseTab'; tab: ResponseTab }
@@ -575,6 +577,9 @@ export function reducer(state: State, action: Action): State {
 
     case 'setUninstallFeedback':
       return { ...state, data: { ...state.data, uninstallFeedback: action.enabled } };
+
+    case 'setResolveCurlVariables':
+      return { ...state, data: { ...state.data, resolveCurlVariables: action.enabled } };
 
     case 'setSidebarView':
       return { ...state, sidebarView: action.view };

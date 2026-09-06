@@ -195,3 +195,83 @@ describe('toCurl — the query string', () => {
     expect(command).not.toContain('drop');
   });
 });
+
+/**
+ * A curl command's job is to run somewhere else — a terminal, a colleague's
+ * machine, a bug report. Emitting `curl '{{baseUrl}}/x'` hands back something
+ * that fails on the first character of the host, so the environment is
+ * substituted unless the caller deliberately asks for the template.
+ */
+describe('toCurl — resolving variables', () => {
+  const vars = {
+    baseUrl: 'https://api.github.com',
+    owner: 'triskintech',
+    token: 'the-secret',
+    header: 'X-Trace',
+  };
+
+  it('substitutes the url and the params folded into it', () => {
+    const request = newRequest('r', {
+      url: '{{baseUrl}}/users/{{owner}}/repos',
+      params: [kv('per_page', '5'), kv('sort', 'updated')],
+    });
+    expect(toCurl(request, vars)).toContain(
+      "curl 'https://api.github.com/users/triskintech/repos?per_page=5&sort=updated'",
+    );
+  });
+
+  it('substitutes both sides of a header', () => {
+    const request = newRequest('r', {
+      url: '{{baseUrl}}/x',
+      headers: [kv('{{header}}', 'run-{{owner}}')],
+    });
+    expect(toCurl(request, vars)).toContain("-H 'X-Trace: run-triskintech'");
+  });
+
+  it('substitutes a bearer token, so the command actually authenticates', () => {
+    const request = newRequest('r', {
+      url: '{{baseUrl}}/x',
+      auth: { ...emptyAuth(), type: 'bearer', token: '{{token}}' },
+    });
+    expect(toCurl(request, vars)).toContain("-H 'Authorization: Bearer the-secret'");
+  });
+
+  it('substitutes inside a json body', () => {
+    const request = newRequest('r', {
+      method: 'POST',
+      url: '{{baseUrl}}/x',
+      body: { ...emptyBody(), mode: 'json', raw: '{"owner":"{{owner}}"}' },
+    });
+    expect(toCurl(request, vars)).toContain('--data-raw \'{"owner":"triskintech"}\'');
+  });
+
+  // Better a command that visibly names what is missing than one that quietly
+  // requests https:///users//repos and 404s.
+  it('leaves a name the environment does not define exactly as it is', () => {
+    const request = newRequest('r', { url: '{{baseUrl}}/{{nowhere}}' });
+    expect(toCurl(request, vars)).toContain("curl 'https://api.github.com/{{nowhere}}'");
+  });
+
+  it('emits the untouched template when given no variables', () => {
+    const request = newRequest('r', {
+      url: '{{baseUrl}}/users/{{owner}}/repos',
+      auth: { ...emptyAuth(), type: 'bearer', token: '{{token}}' },
+    });
+    const command = toCurl(request);
+    expect(command).toContain("curl '{{baseUrl}}/users/{{owner}}/repos'");
+    expect(command).toContain('Bearer {{token}}');
+    expect(command).not.toContain('the-secret');
+  });
+
+  it('round-trips back through parseCurl once resolved', () => {
+    const request = newRequest('r', {
+      url: '{{baseUrl}}/users/{{owner}}/repos',
+      params: [kv('per_page', '5')],
+    });
+    const parsed = parseCurl(toCurl(request, vars));
+    // parseCurl keeps the query in the url *and* as rows on purpose;
+    // applyParamsToUrl replaces rather than appends, so it is not doubled.
+    expect(parsed.url).toBe('https://api.github.com/users/triskintech/repos?per_page=5');
+    expect(parsed.params.map((p) => [p.key, p.value])).toEqual([['per_page', '5']]);
+  });
+});

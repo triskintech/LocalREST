@@ -1,5 +1,40 @@
 import { applyParamsToUrl } from '../url';
+import { resolve } from '../variables/resolve';
 import { BODYLESS_METHODS, type ApiRequest, type KeyValue } from '../types';
+
+/**
+ * The request with every `{{variable}}` substituted.
+ *
+ * With no variables to hand this is an identity — `resolve` leaves a name it
+ * cannot find exactly as it was — so the untouched-template behaviour is
+ * simply this function called with an empty set, rather than a second path.
+ */
+function substituted(request: ApiRequest, vars: Record<string, string>): ApiRequest {
+  const text = (value: string) => resolve(value, vars).text;
+  const rows = <T extends KeyValue>(list: T[]): T[] =>
+    list.map((row) => ({ ...row, key: text(row.key), value: text(row.value) }));
+
+  return {
+    ...request,
+    url: text(request.url),
+    params: rows(request.params),
+    headers: rows(request.headers),
+    body: {
+      ...request.body,
+      raw: text(request.body.raw),
+      formData: rows(request.body.formData),
+      urlencoded: rows(request.body.urlencoded),
+    },
+    auth: {
+      ...request.auth,
+      token: text(request.auth.token),
+      username: text(request.auth.username),
+      password: text(request.auth.password),
+      key: text(request.auth.key),
+      value: text(request.auth.value),
+    },
+  };
+}
 
 /**
  * Single-quote for a POSIX shell. There is no escape sequence inside single
@@ -40,17 +75,24 @@ function urlWithParams(request: ApiRequest): string {
 /**
  * Render a request as a curl command, wrapped across lines the way curl
  * commands are usually shared. `parseCurl` reads its output back.
+ *
+ * `vars` decides what the command is for. With the active environment, it is
+ * a command that runs — which is the point of copying one — and it carries
+ * whatever secret the auth fields hold. Empty, it is the portable template,
+ * safe to paste in front of anyone and re-importable with its variables
+ * still variables.
  */
-export function toCurl(request: ApiRequest): string {
+export function toCurl(request: ApiRequest, vars: Record<string, string> = {}): string {
+  const resolved = substituted(request, vars);
   const parts: string[] = [];
 
-  if (request.method !== 'GET') parts.push(`-X ${request.method}`);
+  if (resolved.method !== 'GET') parts.push(`-X ${resolved.method}`);
 
-  for (const header of active(request.headers)) {
+  for (const header of active(resolved.headers)) {
     parts.push(`-H ${quote(`${header.key}: ${header.value}`)}`);
   }
 
-  const { auth } = request;
+  const { auth } = resolved;
   if (auth.type === 'bearer' && auth.token) {
     parts.push(`-H ${quote(`Authorization: Bearer ${auth.token}`)}`);
   } else if (auth.type === 'basic' && (auth.username || auth.password)) {
@@ -61,8 +103,8 @@ export function toCurl(request: ApiRequest): string {
   // The query case is handled in the URL below — it used to be dropped, so the
   // copied command 401'd with nothing to show why.
 
-  if (!BODYLESS_METHODS.has(request.method)) {
-    const { body } = request;
+  if (!BODYLESS_METHODS.has(resolved.method)) {
+    const { body } = resolved;
     if (body.mode === 'json' || body.mode === 'text') {
       if (body.raw) parts.push(`--data-raw ${quote(body.raw)}`);
     } else if (body.mode === 'x-www-form-urlencoded') {
@@ -78,6 +120,6 @@ export function toCurl(request: ApiRequest): string {
     }
   }
 
-  const head = `curl ${quote(urlWithParams(request))}`;
+  const head = `curl ${quote(urlWithParams(resolved))}`;
   return parts.length === 0 ? head : `${head} \\\n  ${parts.join(' \\\n  ')}`;
 }
