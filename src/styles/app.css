@@ -1240,3 +1240,87 @@ textarea.curl-snippet {
   font-weight: 800;
   color: var(--color-accent-700);
 }
+
+/* — URL field — */
+
+/* The wrapper wears .input, so the box, border, background and focus colour
+   are the shared ones and this only has to stop CodeMirror imposing its own. */
+.url-field {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.url-field:focus-within { border-color: var(--color-accent); }
+
+.url-field .cm-editor { width: 100%; background: transparent; }
+.url-field .cm-editor.cm-focused { outline: none; }
+
+.url-field .cm-scroller {
+  font: inherit;
+  line-height: 22px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.url-field .cm-content {
+  padding: 6px 10px;
+  caret-color: var(--color-accent);
+  white-space: pre;
+}
+
+.url-field .cm-line { padding: 0; }
+.url-field .cm-placeholder { color: var(--color-neutral-700); }
+
+/* Three weights on the field's own background, all measured: plain URL text
+   at 13.7:1, the braces at 5.4:1, the name at 5.8:1. The name takes the second
+   accent hue rather than the first, so a variable never reads as a piece of
+   the chrome — the Send button sitting beside it is the primary accent. */
+.cm-var-brace { color: var(--color-neutral-700); }
+.cm-var-name { color: var(--color-accent-2-700); }
+
+/* A name with nothing behind it gives up the colour that means "this has a
+   value" and takes a mark instead, so the difference is not carried by hue
+   alone — and the request that would have gone out with a literal {{name}}
+   in it is visible before it is sent. */
+.cm-var-unset {
+  color: var(--color-neutral-700);
+  text-decoration: underline dotted var(--color-accent-2-700);
+  text-underline-offset: 3px;
+}
+
+/* CodeMirror's own tooltip chrome, removed so the panel below is the app's. */
+.url-field ~ .cm-tooltip,
+.cm-tooltip.cm-tooltip-hover { background: none; border: none; }
+
+.var-tip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 320px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-md);
+}
+
+.var-tip-name { font-size: 11px; color: var(--color-neutral-700); }
+
+.var-tip-value {
+  font-size: 12px;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.var-tip-unset { color: var(--color-neutral-700); }
+
+.curl-snippet-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}

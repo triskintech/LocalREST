@@ -1,6 +1,16 @@
 import type { Environment } from '../types';
 
-const PATTERN = /\{\{\s*([^}\s]+)\s*\}\}/g;
+/**
+ * `{{name}}`, in five groups: opening braces, padding, name, padding, closing.
+ *
+ * A factory rather than a shared constant, because a /g regex carries
+ * lastIndex and two callers stepping through it would skip each other's
+ * matches. The groups exist so a caller that needs character offsets — the URL
+ * field, to colour the braces apart from the name — can compute them from
+ * lengths instead of searching the match again, and so highlighting and
+ * substitution can never disagree about what counts as a variable.
+ */
+export const variablePattern = (): RegExp => /(\{\{)(\s*)([^}\s]+)(\s*)(\}\})/g;
 
 export type Resolved = {
   text: string;
@@ -18,7 +28,7 @@ export type Resolved = {
 export function resolve(template: string, vars: Record<string, string>): Resolved {
   const missing: string[] = [];
 
-  const text = template.replace(PATTERN, (match, rawName: string) => {
+  const text = template.replace(variablePattern(), (match, _open, _lead, rawName: string) => {
     const name = rawName.trim();
     if (Object.prototype.hasOwnProperty.call(vars, name)) return vars[name] as string;
     if (!missing.includes(name)) missing.push(name);

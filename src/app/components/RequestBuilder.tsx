@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef, useState, type ClipboardEvent as ReactClipboardEvent } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { looksLikeCurl, parseCurl } from '../../lib/curl/parseCurl';
 import { BODYLESS_METHODS, METHODS, type Method } from '../../lib/types';
 import { isForbiddenHeader } from '../../lib/request/buildRequest';
 import { applyParamsToUrl, splitQuery } from '../../lib/url';
+import { environmentVars } from '../../lib/variables/resolve';
 import {
   defaultBuilderTab,
   importToast,
@@ -16,6 +17,7 @@ import { KeyValueEditor } from './KeyValueEditor';
 import { PaneSplitter, clampEditorHeight } from './PaneSplitter';
 import { ResponsePane } from './ResponsePane';
 import { TabBar } from './TabBar';
+import { UrlField } from './UrlField';
 import type { ResponseState } from '../net/response';
 
 const TABS = [
@@ -48,6 +50,14 @@ export function RequestBuilder({
   const request = useActiveRequest();
   const edit = useEditActive();
   const tab = state.builderTab;
+
+  const environment = state.data.environments.find(
+    (each) => each.id === state.data.activeEnvironmentId,
+  );
+  // Rebuilt only when the environment itself changes: the URL field holds
+  // this in a CodeMirror compartment, and a fresh object every render would
+  // reconfigure the editor on every keystroke.
+  const vars = useMemo(() => environmentVars(environment), [environment]);
   const bodyless = BODYLESS_METHODS.has(request.method);
 
   const panesRef = useRef<HTMLDivElement>(null);
@@ -139,21 +149,19 @@ export function RequestBuilder({
    * than becoming the URL — the same read `parseCurl` gives the Import curl
    * dialog, just applied in place instead of opening a new tab.
    */
-  const pasteCurl = (event: ReactClipboardEvent<HTMLInputElement>) => {
-    const text = event.clipboardData.getData('text');
-    if (!looksLikeCurl(text)) return;
-    event.preventDefault();
+  const pasteCurl = (text: string): boolean => {
+    if (!looksLikeCurl(text)) return false;
 
     let parsed;
     try {
       parsed = parseCurl(text);
     } catch {
       dispatch({ type: 'toast', message: 'That could not be read as a curl command.' });
-      return;
+      return true;
     }
     if (!parsed.url) {
       dispatch({ type: 'toast', message: 'No URL found in that curl command.' });
-      return;
+      return true;
     }
 
     edit({
@@ -170,6 +178,7 @@ export function RequestBuilder({
     });
     dispatch({ type: 'setBuilderTab', tab: defaultBuilderTab(parsed.method) });
     dispatch({ type: 'toast', message: importToast(parsed) });
+    return true;
   };
 
   const counts: Record<string, number> = {
@@ -208,23 +217,20 @@ export function RequestBuilder({
           ))}
         </select>
 
-        <input
-          className="input mono"
-          style={{ flex: 1 }}
-          type="text"
-          aria-label="URL"
-          placeholder="https://api.example.com/resource"
+        <UrlField
           value={request.url}
-          onChange={(e) => edit({ url: e.target.value })}
+          vars={vars}
+          environmentName={environment?.name ?? null}
+          placeholder="https://api.example.com/resource"
+          onChange={(url) => edit({ url })}
           onPaste={pasteCurl}
           // Syncing on blur rather than on every keystroke keeps the field from
           // rewriting itself while you are still typing in it.
           onBlur={syncQueryAndParams}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !sending) {
-              syncQueryAndParams();
-              onSend();
-            }
+          onSubmit={() => {
+            if (sending) return;
+            syncQueryAndParams();
+            onSend();
           }}
         />
 
