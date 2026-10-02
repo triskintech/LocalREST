@@ -7,8 +7,9 @@ export type MenuItem =
   | { kind: 'custom'; content: ReactNode };
 
 /**
- * A dropdown that closes on outside click and on Escape, and returns focus to
- * its trigger so keyboard users are never stranded.
+ * A dropdown that closes on outside click and on Escape, returns focus to its
+ * trigger so keyboard users are never stranded, and — when it really is a menu
+ * — moves between its items on the arrow keys.
  */
 export function Menu({
   trigger,
@@ -33,6 +34,17 @@ export function Menu({
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Only a real menu gets arrow navigation.
+   *
+   * The settings popover passes role="group" because it holds radios and
+   * checkboxes, and those own the arrow keys themselves — a segmented control
+   * moves between its options on Left/Right, and stealing Up/Down there would
+   * break the pattern this component is trying to honour.
+   */
+  const isMenu = panelRole === 'menu';
 
   useEffect(() => {
     if (!open) return;
@@ -40,10 +52,40 @@ export function Menu({
     const onPointerDown = (event: PointerEvent) => {
       if (!anchorRef.current?.contains(event.target as Node)) setOpen(false);
     };
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      setOpen(false);
-      triggerRef.current?.focus();
+      if (event.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus();
+        return;
+      }
+      if (!isMenu) return;
+
+      // The trigger says aria-haspopup="menu" and every entry says
+      // role="menuitem". That markup promises Up and Down move between them;
+      // without this the promise was false and Tab was the only way through.
+      const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+      if (!keys.includes(event.key)) return;
+
+      const entries = [
+        ...(panelRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []),
+      ];
+      if (entries.length === 0) return;
+      event.preventDefault();
+
+      const last = entries.length - 1;
+      // -1 while focus is still on the trigger, which is what makes Down open
+      // at the first entry and Up wrap to the last.
+      const at = entries.indexOf(document.activeElement as HTMLElement);
+
+      const next =
+        event.key === 'Home' ? 0
+        : event.key === 'End' ? last
+        : event.key === 'ArrowDown' ? (at >= last ? 0 : at + 1)
+        : at <= 0 ? last
+        : at - 1;
+
+      entries[next]!.focus();
     };
 
     document.addEventListener('pointerdown', onPointerDown);
@@ -52,7 +94,17 @@ export function Menu({
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [open]);
+  }, [open, isMenu]);
+
+  /**
+   * Opening moves focus onto the first entry, which is what makes the arrow
+   * keys reachable at all: a button opened with Enter leaves focus on the
+   * trigger, and a menu you must Tab into is the thing being fixed.
+   */
+  useEffect(() => {
+    if (!open || !isMenu) return;
+    panelRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+  }, [open, isMenu]);
 
   return (
     <div className="menu-anchor" ref={anchorRef}>
@@ -69,6 +121,7 @@ export function Menu({
       </button>
       {open && (
         <div
+          ref={panelRef}
           className={`menu${panelClassName ? ` ${panelClassName}` : ''}`}
           role={panelRole}
           aria-label={panelRole === 'group' ? label : undefined}

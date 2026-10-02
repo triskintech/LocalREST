@@ -1,9 +1,25 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
 /**
- * Escape closes, focus moves into the dialog on open and the backdrop click
- * dismisses — the three things a keyboard user needs and the prototype's
- * static markup did not have.
+ * Everything focusable, in the order Tab would reach it.
+ *
+ * `getClientRects()` rather than `offsetParent`, which is null for anything
+ * positioned fixed and would drop the whole panel on a surface that used it.
+ */
+const FOCUSABLE = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[contenteditable="true"]',
+  '[tabindex]:not([tabindex="-1"])',
+].join(', ');
+
+/**
+ * Escape closes, focus moves into the dialog on open and stays inside it, and
+ * the backdrop click dismisses — the things a keyboard user needs and the
+ * prototype's static markup did not have.
  */
 export function Dialog({
   title,
@@ -44,7 +60,45 @@ export function Dialog({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCloseRef.current();
+      if (event.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      // `aria-modal="true"` tells assistive technology that everything behind
+      // this panel is inert, and the backdrop makes it unreachable by mouse.
+      // Tab was walking out into it anyway, which left the claim false and the
+      // keyboard user in content they could see but not act on.
+      const panel = panelRef.current;
+      if (!panel) return;
+
+      const stops = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (el) => el.getClientRects().length > 0,
+      );
+      if (stops.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = stops[0]!;
+      const last = stops[stops.length - 1]!;
+      const active = document.activeElement;
+
+      // Focus outside the panel entirely — a backdrop click, or a stray
+      // programmatic focus. Pull it back rather than tabbing on from there.
+      if (!(active instanceof Node) || !panel.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);

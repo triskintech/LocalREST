@@ -1054,20 +1054,29 @@ button.code-fold:hover {
 /* Same mapping as the request Body editor's JSON highlighting
    (JsonBodyEditor.tsx's jsonHighlight), so a value reads the same color in
    both panes. */
+/* The 600 steps measured 3.91:1 and 3.81:1 on --color-surface, which is what
+   the code pane actually sits on — not --color-bg. A response body is the one
+   place in the app where every character is data, so the whole ladder moves up
+   a step rather than only the parts that happened to be worst. */
 .code-string {
-  color: var(--color-accent-600);
+  color: var(--color-accent-700);
 }
 
 .code-number {
-  color: var(--color-accent-2-600);
+  color: var(--color-accent-2-700);
 }
 
+/* Moved out of the way of punctuation, which had to take 700 to pass. Still
+   the quieter of the two literals against the keys above it. */
 .code-bool-null {
-  color: var(--color-neutral-700);
+  color: var(--color-neutral-800);
 }
 
+/* 2.38:1 at neutral-500 — the worst text in the app, and 119 characters of it
+   in a single response. 600 only reaches 3.55, so the de-emphasis has to be
+   carried by 700 being lighter than the keys rather than by grey alone. */
 .code-punct {
-  color: var(--color-neutral-500);
+  color: var(--color-neutral-700);
 }
 
 /* The folded summary is a control, so it reads as one without shouting. */

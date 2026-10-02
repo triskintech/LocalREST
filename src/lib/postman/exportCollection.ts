@@ -70,10 +70,77 @@ function exportBody(request: ApiRequest) {
   }
 }
 
-/** Split the query string off so it can also be listed in `url.query`. */
+/**
+ * Take a URL apart the way Postman's own parser does.
+ *
+ * `raw` is a display value to Postman, not the source of truth: its SDK reads
+ * `host` and `path`, and a collection carrying only `raw` imports with every
+ * URL blank — which is why Postman rejected what this exporter used to write.
+ * Each rule below mirrors a case checked against `postman-collection`'s
+ * `Url.parse`, including the ones that look like mistakes: a trailing slash
+ * really does produce a final empty path segment, and a host is split on dots
+ * even when it is a single `{{variable}}`.
+ */
+function splitUrl(raw: string) {
+  let rest = raw;
+
+  let hash = '';
+  const hashAt = rest.indexOf('#');
+  if (hashAt !== -1) {
+    hash = rest.slice(hashAt + 1);
+    rest = rest.slice(0, hashAt);
+  }
+
+  const queryAt = rest.indexOf('?');
+  if (queryAt !== -1) rest = rest.slice(0, queryAt);
+
+  let protocol = '';
+  const schemeAt = rest.indexOf('://');
+  if (schemeAt !== -1) {
+    protocol = rest.slice(0, schemeAt);
+    rest = rest.slice(schemeAt + 3);
+  }
+
+  // Only an `@` before the first slash is userinfo; one later belongs to the path.
+  let auth: { user: string; password: string } | undefined;
+  const atAt = rest.indexOf('@');
+  const slashAfterAuth = rest.indexOf('/');
+  if (atAt !== -1 && (slashAfterAuth === -1 || atAt < slashAfterAuth)) {
+    const [user = '', password = ''] = rest.slice(0, atAt).split(':');
+    auth = { user, password };
+    rest = rest.slice(atAt + 1);
+  }
+
+  const slashAt = rest.indexOf('/');
+  const authority = slashAt === -1 ? rest : rest.slice(0, slashAt);
+  const path = slashAt === -1 ? null : rest.slice(slashAt + 1);
+
+  let host = authority;
+  let port = '';
+  const colonAt = authority.lastIndexOf(':');
+  if (colonAt !== -1 && /^\d+$/.test(authority.slice(colonAt + 1))) {
+    host = authority.slice(0, colonAt);
+    port = authority.slice(colonAt + 1);
+  }
+
+  return { protocol, auth, host, port, path, hash };
+}
+
+/** The `url` object Postman writes: the parts, with `raw` alongside them. */
 function exportUrl(request: ApiRequest) {
   const query = asRows(request.params);
-  return query.length > 0 ? { raw: request.url, query } : { raw: request.url };
+  const parts = splitUrl(request.url);
+
+  return {
+    raw: request.url,
+    ...(parts.protocol ? { protocol: parts.protocol } : {}),
+    ...(parts.auth ? { auth: parts.auth } : {}),
+    ...(parts.host ? { host: parts.host.split('.') } : {}),
+    ...(parts.port ? { port: parts.port } : {}),
+    ...(parts.path === null ? {} : { path: parts.path.split('/') }),
+    ...(query.length > 0 ? { query } : {}),
+    ...(parts.hash ? { hash: parts.hash } : {}),
+  };
 }
 
 /**

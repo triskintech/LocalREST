@@ -389,3 +389,38 @@ describe('applyParamsToUrl — rows that were renamed or removed', () => {
     );
   });
 });
+
+describe('applyParamsToUrl — the rows decide the order of their own keys', () => {
+  const row = (key: string, value: string, enabled = true) => ({
+    id: `${key}:${value}`,
+    key,
+    value,
+    enabled,
+  });
+
+  /**
+   * Disabling a row takes its key out of the query, so re-enabling it used to
+   * look like a key the URL had never had and went to the end. The table said
+   * `a, b` and the URL said `b, a` — a drift between two views the app
+   * promises are the same thing.
+   */
+  it('puts a re-enabled row back in its row position, not at the end', () => {
+    const off = applyParamsToUrl('https://api.test/x?a=1&b=2', [row('a', '1', false), row('b', '2')]);
+    expect(off).toBe('https://api.test/x?b=2');
+    expect(applyParamsToUrl(off, [row('a', '1'), row('b', '2')])).toBe(
+      'https://api.test/x?a=1&b=2',
+    );
+  });
+
+  it('keeps a url-only key between the rows it sat between', () => {
+    expect(
+      applyParamsToUrl('https://api.test/x?a=1&keep=2&z=3', [row('a', '9'), row('z', '8')]),
+    ).toBe('https://api.test/x?a=9&keep=2&z=8');
+  });
+
+  it('follows the rows when they are reordered', () => {
+    expect(applyParamsToUrl('https://api.test/x?a=1&b=2', [row('b', '2'), row('a', '1')])).toBe(
+      'https://api.test/x?b=2&a=1',
+    );
+  });
+});

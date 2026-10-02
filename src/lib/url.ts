@@ -130,23 +130,48 @@ export function applyParamsToUrl(
   const pieces: string[] = [];
   const emitted = new Set<string>();
 
-  // Keep the original ordering of keys the URL already had.
+  /**
+   * The rows decide the order of the keys they own; a key only the URL has
+   * keeps its place among them.
+   *
+   * Anchoring a URL-only key to "after N owned keys" rather than to an index
+   * is what lets both hold at once. Ordering owned keys by their position in
+   * the URL instead looked equivalent, and was not: a row toggled off leaves
+   * the query, so toggling it back on made it a key the URL did not have and
+   * sent it to the end — the table read `a, b` while the URL read `b, a`,
+   * which is exactly the drift these two views promise never to have.
+   */
+  const unowned: { raw: string; afterGroups: number }[] = [];
+  const urlOrder: string[] = [];
   for (const pair of existing) {
-    if (!owned.has(pair.key)) {
-      pieces.push(pair.raw);
-      continue;
+    if (owned.has(pair.key)) {
+      if (!urlOrder.includes(pair.key)) urlOrder.push(pair.key);
+    } else {
+      unowned.push({ raw: pair.raw, afterGroups: urlOrder.length });
     }
-    if (emitted.has(pair.key)) continue;
-    emitted.add(pair.key);
-    for (const row of named) if (row.key === pair.key && row.enabled) pieces.push(encodeRow(row));
   }
 
-  // Then anything the params introduce that the URL did not have.
-  for (const param of named) {
-    if (emitted.has(param.key) || !param.enabled) continue;
-    emitted.add(param.key);
-    for (const row of named) if (row.key === param.key && row.enabled) pieces.push(encodeRow(row));
+  // Row order, but a key the URL already carried keeps its turn among them.
+  const keyOrder: string[] = [];
+  for (const param of named) if (!keyOrder.includes(param.key)) keyOrder.push(param.key);
+
+  let flushed = 0;
+  const flushUnownedUpTo = (groups: number) => {
+    while (flushed < unowned.length && unowned[flushed]!.afterGroups <= groups) {
+      pieces.push(unowned[flushed]!.raw);
+      flushed += 1;
+    }
+  };
+
+  let groupsEmitted = 0;
+  for (const key of keyOrder) {
+    flushUnownedUpTo(groupsEmitted);
+    if (emitted.has(key)) continue;
+    emitted.add(key);
+    for (const row of named) if (row.key === key && row.enabled) pieces.push(encodeRow(row));
+    groupsEmitted += 1;
   }
+  flushUnownedUpTo(Number.MAX_SAFE_INTEGER);
 
   return (pieces.length > 0 ? `${base}?${pieces.join('&')}` : base) + fragment;
 }

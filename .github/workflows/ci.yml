@@ -1,0 +1,55 @@
+# Typecheck, test and build on every push and pull request.
+#
+# Until this existed the 590-odd tests ran nowhere but one laptop, which meant
+# a contributor's first pull request had nothing checking it and a green-looking
+# diff was being reviewed on trust.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Only the latest commit on a branch matters; an older run of the same branch is
+# answering a question nobody is asking any more.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ci, not install: the lockfile is the input, and a run that quietly
+      # resolved a different tree would not be testing what ships.
+      - run: npm ci
+
+      # Separate from the build, which also runs tsc — a type error should fail
+      # on its own line rather than inside a bundling step.
+      - run: npm run typecheck
+
+      - run: npm test
+
+      - run: npm run build
+
+      # The store wants a zip of dist. Producing it here means the artefact that
+      # was tested is the artefact that gets uploaded, rather than whatever a
+      # local tree happened to contain at the time.
+      - name: Package for the Chrome Web Store
+        run: cd dist && zip -qr ../localrest.zip . -x '.*'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: localrest-extension
+          path: localrest.zip
+          if-no-files-found: error

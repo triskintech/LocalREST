@@ -290,3 +290,122 @@ describe('importPostman', () => {
     expect(() => importPostman({ hello: 'world' })).toThrow(/collection/i);
   });
 });
+
+/** Shapes a real Postman export contains that a hand-written one rarely does. */
+describe('importPostman against what Postman actually writes', () => {
+  const first = (source: unknown) => importPostman(source).collection.requests[0]!;
+
+  it('does not invent a scheme for a {{variable}} host', () => {
+    // https://{{baseUrl}} resolves to nothing, because baseUrl carries its own.
+    const request = first(
+      wrap([{ name: 'V', request: { url: { host: ['{{baseUrl}}'], path: ['items'] } } }]),
+    );
+    expect(request.url).toBe('{{baseUrl}}/items');
+  });
+
+  it('still supplies https for a real host given only in parts', () => {
+    const request = first(
+      wrap([{ name: 'H', request: { url: { host: ['api', 'test'], path: ['x'] } } }]),
+    );
+    expect(request.url).toBe('https://api.test/x');
+  });
+
+  it('believes the declared editor language over the leading character', () => {
+    const request = first(
+      wrap([
+        {
+          name: 'B',
+          request: {
+            method: 'POST',
+            url: 'https://api.test/x',
+            body: { mode: 'raw', raw: '{{payload}}', options: { raw: { language: 'json' } } },
+          },
+        },
+      ]),
+    );
+    expect(request.body.mode).toBe('json');
+  });
+
+  it('reads a raw body declared as text, however it begins', () => {
+    const request = first(
+      wrap([
+        {
+          name: 'B',
+          request: {
+            method: 'POST',
+            url: 'https://api.test/x',
+            body: { mode: 'raw', raw: '{not json}', options: { raw: { language: 'text' } } },
+          },
+        },
+      ]),
+    );
+    expect(request.body.mode).toBe('text');
+  });
+
+  it('imports a graphql body as the JSON it would actually send', () => {
+    const request = first(
+      wrap([
+        {
+          name: 'G',
+          request: {
+            method: 'POST',
+            url: 'https://api.test/graphql',
+            body: {
+              mode: 'graphql',
+              graphql: { query: '{ me { id } }', variables: '{"a":1}' },
+            },
+          },
+        },
+      ]),
+    );
+    expect(request.body.mode).toBe('json');
+    expect(JSON.parse(request.body.raw)).toEqual({ query: '{ me { id } }', variables: { a: 1 } });
+  });
+
+  it('inherits auth from the collection', () => {
+    const request = first({
+      ...wrap([{ name: 'A', request: { url: 'https://api.test/x' } }]),
+      auth: { type: 'bearer', bearer: [{ key: 'token', value: 'tkn' }] },
+    });
+    expect(request.auth).toMatchObject({ type: 'bearer', token: 'tkn' });
+  });
+
+  it('lets a request opt out of inherited auth with noauth', () => {
+    const request = first({
+      ...wrap([{ name: 'A', request: { url: 'https://api.test/x', auth: { type: 'noauth' } } }]),
+      auth: { type: 'bearer', bearer: [{ key: 'token', value: 'tkn' }] },
+    });
+    expect(request.auth.type).toBe('none');
+  });
+
+  it('inherits auth through a folder', () => {
+    const request = first({
+      ...wrap([
+        {
+          name: 'Folder',
+          auth: { type: 'basic', basic: [{ key: 'username', value: 'u' }, { key: 'password', value: 'p' }] },
+          item: [{ name: 'A', request: { url: 'https://api.test/x' } }],
+        },
+      ]),
+    });
+    expect(request.auth).toMatchObject({ type: 'basic', username: 'u', password: 'p' });
+  });
+
+  it('reads headers given as one newline-delimited string', () => {
+    const request = first(
+      wrap([
+        {
+          name: 'H',
+          request: {
+            url: 'https://api.test/x',
+            header: 'Accept: application/json\nX-Key: abc',
+          },
+        },
+      ]),
+    );
+    expect(request.headers.map((h) => [h.key, h.value])).toEqual([
+      ['Accept', 'application/json'],
+      ['X-Key', 'abc'],
+    ]);
+  });
+});

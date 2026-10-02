@@ -121,3 +121,57 @@ describe('exportPostman → importPostman round trip', () => {
     expect(exported.info.schema).toContain('v2.1.0');
   });
 });
+
+/**
+ * Postman reads `host` and `path`, not `raw`.
+ *
+ * An export carrying only `raw` loads into Postman with every URL blank, which
+ * is what made the file look like a format it did not support. Each expectation
+ * below was taken from `postman-collection`'s own `Url.parse`, so these are
+ * Postman's rules rather than a guess at them — including the awkward ones: a
+ * trailing slash leaves a final empty segment, and a lone `{{variable}}` host
+ * is still split on dots.
+ */
+describe('exportPostman URL decomposition', () => {
+  const urlOf = (url: string) => {
+    const exported = exportPostman(collection([newRequest('r1', { url })])) as {
+      item: { request: { url: Record<string, unknown> } }[];
+    };
+    return exported.item[0]!.request.url;
+  };
+
+  it.each([
+    ['https://api.test/x', { protocol: 'https', host: ['api', 'test'], path: ['x'] }],
+    ['{{baseUrl}}/users/{{owner}}/repos', { host: ['{{baseUrl}}'], path: ['users', '{{owner}}', 'repos'] }],
+    ['http://localhost:3000/api/orders', { protocol: 'http', host: ['localhost'], port: '3000', path: ['api', 'orders'] }],
+    ['api.github.com/rate_limit', { host: ['api', 'github', 'com'], path: ['rate_limit'] }],
+    ['https://api.test', { protocol: 'https', host: ['api', 'test'] }],
+    ['https://api.test/', { protocol: 'https', host: ['api', 'test'], path: [''] }],
+    ['https://api.test/a/', { protocol: 'https', host: ['api', 'test'], path: ['a', ''] }],
+    ['{{baseUrl}}', { host: ['{{baseUrl}}'] }],
+  ])('%s', (url, expected) => {
+    expect(urlOf(url)).toMatchObject({ raw: url, ...expected });
+  });
+
+  it('has no path key at all when there is no path', () => {
+    expect(urlOf('https://api.test')).not.toHaveProperty('path');
+  });
+
+  it('keeps userinfo and the fragment out of the host', () => {
+    expect(urlOf('https://user:pw@api.test:8443/a#frag')).toMatchObject({
+      protocol: 'https',
+      auth: { user: 'user', password: 'pw' },
+      host: ['api', 'test'],
+      port: '8443',
+      path: ['a'],
+      hash: 'frag',
+    });
+  });
+
+  it('treats an @ after the first slash as part of the path', () => {
+    expect(urlOf('https://api.test/users/@me')).toMatchObject({
+      host: ['api', 'test'],
+      path: ['users', '@me'],
+    });
+  });
+});
