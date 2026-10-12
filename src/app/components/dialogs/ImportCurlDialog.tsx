@@ -35,7 +35,7 @@ export function ImportCurlDialog() {
   return (
     <Dialog
       title="Import curl"
-      description="Paste a curl command. Method, URL, headers, body and auth are read from it — including what Chrome DevTools puts on your clipboard."
+      description="Paste a curl command. Method, URL, headers, body and auth are read from it — including what DevTools puts on your clipboard."
       onClose={close}
       actions={
         <>

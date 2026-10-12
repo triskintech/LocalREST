@@ -132,7 +132,9 @@ for (const size of [16, 32, 48, 128]) {
 writeFileSync(`${brandDir}/mark.svg`, renderSvg());
 console.log('wrote brand/mark.svg');
 
-for (const size of [256, 512, 1024]) {
+// 300 is the Microsoft Edge Add-ons store logo. Rendered here rather than
+// resampled from 512, so the rules land on whole pixels like every other size.
+for (const size of [256, 300, 512, 1024]) {
   writeFileSync(`${brandDir}/mark-${size}.png`, renderPng(size));
   console.log(`wrote brand/mark-${size}.png`);
 }

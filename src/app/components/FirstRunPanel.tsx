@@ -98,8 +98,8 @@ export function FirstRunPanel() {
     >
       <div className="dialog-body">
         <p style={{ marginTop: 0 }}>
-          LocalREST sends requests straight from your browser, so Chrome has to grant it access
-          to the hosts you call.
+          LocalREST sends requests straight from your browser, so the browser has to grant it
+          access to the hosts you call.
         </p>
         <p>
           Allow all sites once and it never asks again. Otherwise it asks the first time you send
