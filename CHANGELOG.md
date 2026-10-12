@@ -8,10 +8,10 @@ suffix like `1.0.0-beta` is rejected at upload, so none is used here.
 The published version is whatever `manifest.json` says; `package.json` is kept
 in step and a test fails the build if the two ever drift.
 
-## 1.0.0 — unreleased
+## 1.0.0 — 2026-10-12
 
-The first public release. Awaiting Chrome Web Store review; this entry gets its
-date when the listing goes live.
+The first public release. Submitted to the Chrome Web Store on 6 October 2026,
+reviewed, and live on 12 October 2026.
 
 ### Requests
 

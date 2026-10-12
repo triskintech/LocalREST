@@ -8,7 +8,7 @@
 An API client that runs entirely in your browser. Build a request, send it, read the response,
 keep your requests in collections — no account, no cloud sync, no 200MB desktop app.
 
-> **Not on the Chrome Web Store yet.** This line becomes the install link once the listing is live.
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/acieofgnlbbnbhepipbabedflokbiphl)** — free, and it asks for no site access on install.
 
 Once installed, click the LocalREST icon in your toolbar. There is nothing to sign up for and
 nothing to configure.
