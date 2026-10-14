@@ -69,6 +69,10 @@ survives an uninstall, so take one before you reinstall or switch laptops.
 Nothing you create leaves this browser. The full statement — what is stored, and the one security
 caveat worth knowing about saved credentials — is in [PRIVACY.md](PRIVACY.md).
 
+## Listed on
+
+[![LocalREST | AlternativeTo](https://alternativeto.net/static/badges/badge-compact-color.svg)](https://alternativeto.net/software/localrest/about/?utm_source=badge&utm_medium=referral)
+
 ## Licence
 
 The source is public so you can read it. It is not licensed for reuse or
