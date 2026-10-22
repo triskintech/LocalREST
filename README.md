@@ -46,6 +46,45 @@ nothing to configure.
 - **Light and dark.** *System / Light / Dark* in the top bar. System follows your OS and switches
   live when it does.
 
+## Common questions
+
+### Is there a Postman alternative that runs in the browser?
+
+Yes. LocalREST is a Chrome and Chromium extension, so it opens in a tab with nothing to install
+beyond the extension itself. It covers the everyday Postman workflow — building requests, saving
+them into collections, environments and history — with no account, no cloud workspace and no
+desktop application.
+
+### Can I use an API client without creating an account?
+
+LocalREST needs no account, no sign-in and no team workspace. It opens straight into an empty
+request. Collections, environments and history live in your browser profile on this machine, so
+there is nothing to register for and nothing to sync.
+
+### How do I turn a curl command into a request?
+
+Paste it into the URL bar. LocalREST reads the method, URL, query parameters, headers, body and
+auth out of the command and fills the request in — including what Chrome DevTools → Network →
+*Copy as cURL* puts on your clipboard. **Copy as curl** goes back the other way.
+
+### Can I import my Postman collections?
+
+Yes — Postman collection format v2.1 and v2.0, through *Import ▾*. Collection variables arrive as
+a LocalREST environment. Export writes the same format, and the file it produces imports back
+into Postman.
+
+### Does LocalREST send my requests anywhere?
+
+No. The only network requests it makes are the ones you press Send on. There is no server, no
+account, no sync and no analytics of any kind — not anonymised, not aggregated. Everything is
+stored in your browser's extension storage.
+
+### Is LocalREST free? Is it open source?
+
+It is free. The source is public so you can read exactly what it does with your data, but it is
+**not** open source: the licence grants reading, not reuse or redistribution. See
+[LICENSE](LICENSE).
+
 ## Site access
 
 LocalREST installs with **no access to any website**, so the first time you open it, it asks.
