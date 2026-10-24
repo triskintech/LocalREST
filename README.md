@@ -17,9 +17,10 @@ nothing to configure.
 
 Paste a curl command into the URL bar and it becomes a request you can edit, send and save.
 
-[![Watch the demo](brand/demo-poster.png)](https://youtu.be/HJvjV32jLHU)
+[![Paste a curl command and it becomes a request](brand/demo.gif)](https://youtu.be/HJvjV32jLHU)
 
-*29 seconds — paste, format, send, read the response.*
+*The first few seconds. [Watch the full demo](https://youtu.be/HJvjV32jLHU) — sending it,
+reading the response, and folding it down.*
 
 ## Why this one
 
