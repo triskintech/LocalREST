@@ -13,6 +13,14 @@ keep your requests in collections — no account, no cloud sync, no 200MB deskto
 Once installed, click the LocalREST icon in your toolbar. There is nothing to sign up for and
 nothing to configure.
 
+## The demo
+
+Paste a curl command into the URL bar and it becomes a request you can edit, send and save.
+
+[![Watch the demo](brand/demo-poster.png)](https://youtu.be/HJvjV32jLHU)
+
+*29 seconds — paste, format, send, read the response.*
+
 ## Why this one
 
 - **No account.** Open it and start working. There is no sign-in, no team, no workspace to create.
