@@ -19,8 +19,13 @@ Paste a curl command into the URL bar and it becomes a request you can edit, sen
 
 [![Paste a curl command and it becomes a request](brand/demo.gif)](https://youtu.be/HJvjV32jLHU)
 
-*The first few seconds. [Watch the full demo](https://youtu.be/HJvjV32jLHU) — sending it,
-reading the response, and folding it down.*
+*The first few seconds.*
+
+[Watch the short demo](https://youtu.be/HJvjV32jLHU) — sending it,
+reading the response, and folding it down.
+
+Or the [full walkthrough](https://youtu.be/RiwNpDCI0Fw), which covers collections,
+environments and curl in both directions.
 
 ## Why this one
 
